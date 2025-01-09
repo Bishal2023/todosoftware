@@ -21,6 +21,9 @@
                     <input type="text" id="taskInput" class="form-control" placeholder="Add a new task...">
                     <button class="btn btn-primary" id="addTaskBtn">Add Task</button>
                 </div>
+                <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-danger" id="deleteAllBtn">Delete All</button>
+                </div>
                 <ul class="list-group" id="taskList">
                     <!-- Tasks will be dynamically added here -->
                 </ul>
@@ -32,6 +35,7 @@
         const taskInput = document.getElementById('taskInput');
         const addTaskBtn = document.getElementById('addTaskBtn');
         const taskList = document.getElementById('taskList');
+        const deleteAllBtn = document.getElementById('deleteAllBtn');
 
         // Load tasks from localStorage
         document.addEventListener('DOMContentLoaded', () => {
@@ -93,6 +97,14 @@
             const updatedTasks = tasks.filter(task => task.text !== taskText);
             localStorage.setItem('tasks', JSON.stringify(updatedTasks));
         }
+
+        // Delete All Tasks from localStorage
+        deleteAllBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to delete all tasks?')) {
+                localStorage.removeItem('tasks');
+                taskList.innerHTML = '';
+            }
+        });
 
         // Attach Events to Task
         function attachTaskEvents(taskItem) {
