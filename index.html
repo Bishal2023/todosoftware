@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">To-Do App</h1>
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="input-group mb-3">
+                    <input type="text" id="taskInput" class="form-control" placeholder="Add a new task...">
+                    <button class="btn btn-primary" id="addTaskBtn">Add Task</button>
+                </div>
+                <ul class="list-group" id="taskList">
+                    <!-- Tasks will be dynamically added here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
+
+        // Load tasks from localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            savedTasks.forEach(task => {
+                addTaskToDOM(task.text, task.completed);
+            });
+        });
+
+        // Add Task
+        addTaskBtn.addEventListener('click', () => {
+            const taskText = taskInput.value.trim();
+            if (taskText === '') {
+                alert('Please enter a task.');
+                return;
+            }
+
+            addTaskToDOM(taskText, false);
+            saveTask(taskText, false);
+            taskInput.value = '';
+        });
+
+        function addTaskToDOM(taskText, isCompleted) {
+            const taskItem = document.createElement('li');
+            taskItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+            taskItem.innerHTML = `
+                <span class="task-text ${isCompleted ? 'completed' : ''}">${taskText}</span>
+                <div>
+                    <button class="btn btn-success btn-sm me-2 complete-btn">Complete</button>
+                    <button class="btn btn-warning btn-sm me-2 edit-btn">Edit</button>
+                    <button class="btn btn-danger btn-sm delete-btn">Delete</button>
+                </div>
+            `;
+
+            taskList.appendChild(taskItem);
+            attachTaskEvents(taskItem);
+        }
+
+        // Save Task to localStorage
+        function saveTask(taskText, isCompleted) {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.push({ text: taskText, completed: isCompleted });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Update Task in localStorage
+        function updateTask(oldText, newText, isCompleted) {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            const taskIndex = tasks.findIndex(task => task.text === oldText);
+            if (taskIndex !== -1) {
+                tasks[taskIndex] = { text: newText, completed: isCompleted };
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+        }
+
+        // Delete Task from localStorage
+        function deleteTask(taskText) {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            const updatedTasks = tasks.filter(task => task.text !== taskText);
+            localStorage.setItem('tasks', JSON.stringify(updatedTasks));
+        }
+
+        // Attach Events to Task
+        function attachTaskEvents(taskItem) {
+            const completeBtn = taskItem.querySelector('.complete-btn');
+            const editBtn = taskItem.querySelector('.edit-btn');
+            const deleteBtn = taskItem.querySelector('.delete-btn');
+
+            // Mark as Completed
+            completeBtn.addEventListener('click', () => {
+                const taskText = taskItem.querySelector('.task-text');
+                taskText.classList.toggle('completed');
+                updateTask(taskText.textContent, taskText.textContent, taskText.classList.contains('completed'));
+            });
+
+            // Edit Task
+            editBtn.addEventListener('click', () => {
+                const taskText = taskItem.querySelector('.task-text');
+                const oldText = taskText.textContent;
+                const newTaskText = prompt('Edit your task:', oldText);
+                if (newTaskText !== null && newTaskText.trim() !== '') {
+                    taskText.textContent = newTaskText.trim();
+                    updateTask(oldText, newTaskText.trim(), taskText.classList.contains('completed'));
+                }
+            });
+
+            // Delete Task
+            deleteBtn.addEventListener('click', () => {
+                const taskText = taskItem.querySelector('.task-text').textContent;
+                taskItem.remove();
+                deleteTask(taskText);
+            });
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
