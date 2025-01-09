@@ -10,6 +10,18 @@
             text-decoration: line-through;
             color: gray;
         }
+        .undo-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -31,11 +43,16 @@
         </div>
     </div>
 
+    <div class="undo-message" id="undoMessage">Task deleted. <span id="undoText">Undo</span></div>
+
     <script>
         const taskInput = document.getElementById('taskInput');
         const addTaskBtn = document.getElementById('addTaskBtn');
         const taskList = document.getElementById('taskList');
         const deleteAllBtn = document.getElementById('deleteAllBtn');
+        const undoMessage = document.getElementById('undoMessage');
+        const undoText = document.getElementById('undoText');
+        let deletedTask = null; // Store the deleted task temporarily
 
         // Load tasks from localStorage
         document.addEventListener('DOMContentLoaded', () => {
@@ -135,11 +152,33 @@
             // Delete Task
             deleteBtn.addEventListener('click', () => {
                 const taskText = taskItem.querySelector('.task-text').textContent;
-                if (confirm('Hello Vishal, are you sure you want to delete this task?')) {
+                deletedTask = { text: taskText, element: taskItem }; // Store deleted task
+                if (confirm('Are you sure you want to delete this task?')) {
                     taskItem.remove();
                     deleteTask(taskText);
+                    showUndoMessage();
                 }
             });
+        }
+
+        // Show Undo Message
+        function showUndoMessage() {
+            undoMessage.style.display = 'block';
+            setTimeout(() => {
+                undoMessage.style.display = 'none';
+            }, 5000); // Hide after 5 seconds
+
+            undoText.addEventListener('click', undoDelete);
+        }
+
+        // Undo Delete
+        function undoDelete() {
+            if (deletedTask) {
+                addTaskToDOM(deletedTask.text, false);
+                saveTask(deletedTask.text, false);
+                deletedTask = null; // Reset deleted task
+                undoMessage.style.display = 'none'; // Hide undo message
+            }
         }
     </script>
 
